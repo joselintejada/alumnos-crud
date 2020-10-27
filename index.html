@@ -2,18 +2,39 @@
 <html>
 <head>
 	<meta charset="UTF-8">
-  	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Crud Firebase</title>
-    <link rel="stylesheet" type="text/css" href="style.css">
-   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    
-    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <!-- jQuery and JS bundle w/ Popper.js -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="style.css">    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+    <script src="https://raw.githack.com/eKoopmans/html2pdf/master/dist/html2pdf.bundle.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <style>
+    .gTotales {
+        text-align: center;
+        width: 400px;
+        margin: 1em;
+        padding: 1em;
+        float: left;
+    }
+    </style>
 </head>
+
 <p class="titu" href="#">Crud Firebase Alumnos</p>
 
  <body background-size: cover;>
-
+    <div id="gra">
+    <div class="gTotales" >
+                <canvas style="border: 2px solid brown; width: 350px; height: 200px;" id="lienzo">Tu navegador no es
+                    conmpatible</canvas>
+</div>
+</div>
     <div class="container">
 
  	<div id="contenedor"><!Agregamos varias divisiones que nos serviran como secciones para dividir la pagina>
@@ -51,6 +72,9 @@
             
             <input id="botonRegistrar" class="btn btn-primary" type="button" value="Registrar" onclick="decidirinsertar()">
             <input id="botonModificar" class="btn btn-info" type="button" value="Modificar" onclick="decidiractualizar()">
+             <input id="boton9" class="btn btn-primary" type="button" value="Generar PDF" onclick="pdf()">
+            
+
             <p id="total"></p>
             <p id="prom"></p>
 	 	</div>
@@ -95,18 +119,21 @@
 						<tbody id="mujeres"></tbody>
 				</table>
 			</div>
+            
 		</div>
-	</div></div>
+	</div>
+</div>
  </body>
-
-
 <script src="https://www.gstatic.com/firebasejs/7.2.0/firebase.js"></script>
 
-<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
-
 <script>
+  cont = 0;
+  pro = 0;
+  pro2 = 0;
+  hom = 0;
+  muj = 0;
+  ph = 0;
+  pm = 0;
 var  listaH,listaM;
   // Your web app's Firebase configuration
   // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -125,15 +152,84 @@ var  listaH,listaM;
   firebase.analytics();
 
 
-document.getElementById('matricula').innerHTML="Total";
   cargarTabla();
-  cargarTabla1();
+  cargarTabla1(); 
 
-  cont = 0;
-  pro = 0;
+  function pdf(){
+    var co= document.getElementById("gra");
+    html2pdf()
+    .set({
+        scale: 0,
+        margin:0.0,
+        filename: "Reporte de grafica",
+        jsPDF:{
+            unit: "in",
+            format: "a3",
+            orientation: "portrait"
+        }
+    })
+    .from(co)
+    .save();
+  }
 
+  function graf1(){
+    var c = document.getElementById("lienzo");
+    var chart = new Chart(c, {
+        type: "bar", 
+        data: {
+            labels:["Mujeres", "Hombres", "General"],
+            datasets: [{
+                label: "Alumnos",
+                backgroundColor: "#66999",
+                data: [pm, ph, res]
+            }]
+        },
+        options:{
+            scales:{
+                yAxes:[{
+                    ticks:{
+                        beginAtZero:true
+                    }
+                }]
+            }
+        } 
+    });
+  }
 
+  function cargarTabla() {
+    var task = firebase.database().ref("hombres/");
+    task.on("child_added", function (data) {
+        var taskValue = data.val();
+        var registro = tabla(taskValue.matricula, taskValue.nombre, taskValue.edad, taskValue.sexo, taskValue.promedio);
+        innertHTML("hombres", registro);
+        cont++;
+        hom++;
+        pro = pro + parseFloat(taskValue.promedio);
+        res = pro/cont;
+        ph=res;
+        document.getElementById("total").innerHTML = "El total de alumnos es: "+cont;
+        document.getElementById("prom").innerHTML = "El promedio total es: "+res;
+        graf1();
+    });
+  }
 
+  function cargarTabla1() {
+    var task = firebase.database().ref("mujeres/");
+    task.on("child_added", function (data) {
+        var taskValue = data.val();
+        var registro = tabla1(taskValue.matricula, taskValue.nombre, taskValue.edad, taskValue.sexo, taskValue.promedio);
+        innertHTML("mujeres", registro);
+        cont++;
+        muj++;
+        pro = pro + parseFloat(taskValue.promedio);
+        pro2 = pro2 + parseFloat(taskValue.promedio);
+        res = pro/cont;
+        pm = pro2/muj; 
+        document.getElementById("total").innerHTML = "El total de alumnos es: "+cont;
+        document.getElementById("prom").innerHTML = "El promedio total es: "+res;
+        graf1();
+    });
+  }
 
 var buscar=()=>{
     var bbb=document.getElementById("varBuscar")
@@ -173,35 +269,7 @@ bMujeres.on("child_added", function (data) {
   
 }
 
- function cargarTabla() {
-    var task = firebase.database().ref("hombres/");
-    listaH=task;
-    task.on("child_added", function (data) {
-        var taskValue = data.val();
-        var registro = tabla(taskValue.matricula, taskValue.nombre, taskValue.edad, taskValue.sexo, taskValue.promedio);
-        innertHTML("hombres", registro);
-        cont++;
-        pro = pro + parseFloat(taskValue.promedio);
-        res = pro/cont;
-        document.getElementById("total").innerHTML = "El total de alumnos es: "+cont;
-        document.getElementById("prom").innerHTML = "El promedio total es:"+res;
-    });
-  }
-
-  function cargarTabla1() {
-    var task = firebase.database().ref("mujeres/");
-    listaM=task;
-    task.on("child_added", function (data) {
-        var taskValue = data.val();
-        var registro = tabla1(taskValue.matricula, taskValue.nombre, taskValue.edad, taskValue.sexo, taskValue.promedio);
-        innertHTML("mujeres", registro);
-        cont++;
-        pro = pro + parseFloat(taskValue.promedio);
-        res = pro/cont;
-        document.getElementById("total").innerHTML = "El total de alumnos es: "+cont;
-        document.getElementById("prom").innerHTML = "El promedio total es:"+res;
-    });
-  }
+ 
 
   function innertHTML(id, registro) {
     return document.getElementById(id).innerHTML += registro;
@@ -409,6 +477,8 @@ function decidiractualizar(){
         actualizarRegistro1();
     }
 }  
+
+
 
 
 
